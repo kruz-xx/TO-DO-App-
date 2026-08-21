@@ -1,0 +1,221 @@
+{% extends 'todos/base.html' %}
+{% load static %}
+
+{% block title %}Daily Planner - TODO IST{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 24px;">
+    <h1 style="font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">Daily Planner</h1>
+    <p style="color: var(--text-secondary); font-weight: 500; margin-top: 4px;">Timeblock your day, log your habits, and stay inspired.</p>
+</div>
+
+<div class="daily-planner-container">
+    <!-- Hourly Schedule -->
+    <div class="card">
+        <h3 class="card-title" style="margin-bottom: 20px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Hourly Timeblocks
+        </h3>
+        <div class="timeline-schedule" id="timeline-schedule">
+            <!-- Rendered by JS -->
+        </div>
+    </div>
+
+    <!-- Habit Loggers -->
+    <div style="display: flex; flex-direction: column; gap: 24px;">
+        <!-- Affirmation card -->
+        <div class="pastel-panel" style="background-color: var(--pastel-pink); min-height: 160px;">
+            <div>
+                <span style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; opacity: 0.7;">Affirmation of the Day</span>
+                <p id="daily-affirmation" style="font-size: 18px; font-weight: 600; margin-top: 12px; line-height: 1.4;">"You are capable of doing amazing things."</p>
+            </div>
+            <button id="next-affirmation-btn" style="background: rgba(255, 255, 255, 0.4); border: none; font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: var(--border-radius-sm); cursor: pointer; align-self: flex-start; margin-top: 14px;">Next ✨</button>
+        </div>
+
+        <!-- Water Tracker Card -->
+        <div class="card water-tracker">
+            <h3 class="card-title" style="margin-bottom: 8px;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path></svg>
+                Water Tracker
+            </h3>
+            <p style="font-size: 13px; color: var(--text-secondary); font-weight: 500; margin-bottom: 16px;" id="water-text">Drink 8 glasses of water today! (0/8 completed)</p>
+            
+            <div class="glasses-grid">
+                <div class="glass" data-index="1"></div>
+                <div class="glass" data-index="2"></div>
+                <div class="glass" data-index="3"></div>
+                <div class="glass" data-index="4"></div>
+                <div class="glass" data-index="5"></div>
+                <div class="glass" data-index="6"></div>
+                <div class="glass" data-index="7"></div>
+                <div class="glass" data-index="8"></div>
+            </div>
+            <button class="btn btn-secondary" id="reset-water-btn" style="padding: 6px 12px; font-size: 12px; margin-top: 14px;">Reset Log</button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Hourly Schedule Planner
+    const timelineSchedule = document.getElementById('timeline-schedule');
+    const hours = [
+        "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM", "12:00 PM",
+        "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM",
+        "06:00 PM", "07:00 PM", "08:00 PM"
+    ];
+
+    let backendTodos = [];
+
+    async function fetchDailyTodos() {
+        try {
+            const res = await fetch('/api/todos/');
+            if (res.ok) {
+                const todos = await res.json();
+                // Filter for today's tasks
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+                backendTodos = todos.filter(t => t.due_date === todayStr);
+                renderSchedule();
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function formatTime24(time12) {
+        // time12 = "08:00 AM"
+        const [time, modifier] = time12.split(' ');
+        let [hours, minutes] = time.split(':');
+        if (hours === '12') hours = '00';
+        if (modifier === 'PM') hours = parseInt(hours, 10) + 12;
+        return `${hours.toString().padStart(2, '0')}:${minutes}`;
+    }
+
+    function renderSchedule() {
+        if (!timelineSchedule) return;
+        timelineSchedule.innerHTML = '';
+
+        hours.forEach(hour => {
+            const hour24 = formatTime24(hour);
+            const task = backendTodos.find(t => t.due_time && t.due_time.startsWith(hour24));
+            
+            const hasTask = !!task;
+            const contentText = hasTask ? task.title : 'Double-click to set block...';
+            
+            const slot = document.createElement('div');
+            slot.className = 'time-slot';
+            slot.innerHTML = `
+                <div class="time-label">${hour}</div>
+                <div class="time-slot-content ${hasTask ? 'has-task' : ''}" data-hour24="${hour24}">
+                    ${escapeHtml(contentText)}
+                </div>
+            `;
+            timelineSchedule.appendChild(slot);
+        });
+
+        document.querySelectorAll('.time-slot-content').forEach(element => {
+            element.addEventListener('dblclick', () => {
+                const hour24 = element.getAttribute('data-hour24');
+                const today = new Date();
+                const todayStr = `${today.getFullYear()}-${(today.getMonth()+1).toString().padStart(2, '0')}-${today.getDate().toString().padStart(2, '0')}`;
+                window.dispatchEvent(new CustomEvent('openTaskModal', {
+                    detail: {
+                        title: 'Schedule Timeblock',
+                        dueDate: todayStr,
+                        dueTime: hour24
+                    }
+                }));
+            });
+        });
+    }
+
+    fetchDailyTodos();
+    window.addEventListener('todoSaved', fetchDailyTodos);
+
+    // 2. Water Habit Tracker
+    const glasses = document.querySelectorAll('.glass');
+    const waterText = document.getElementById('water-text');
+    const resetWaterBtn = document.getElementById('reset-water-btn');
+    
+    let waterLog = JSON.parse(localStorage.getItem('water_log') || '[]');
+
+    function renderWaterTracker() {
+        let count = 0;
+        glasses.forEach((glass, i) => {
+            const index = i + 1;
+            if (waterLog.includes(index)) {
+                glass.classList.add('active');
+                count++;
+            } else {
+                glass.classList.remove('active');
+            }
+        });
+        if (waterText) {
+            waterText.textContent = `Drink 8 glasses of water today! (${count}/8 completed)`;
+        }
+    }
+
+    glasses.forEach((glass, i) => {
+        glass.addEventListener('click', () => {
+            const index = i + 1;
+            if (waterLog.includes(index)) {
+                waterLog = waterLog.filter(val => val !== index);
+            } else {
+                waterLog.push(index);
+            }
+            localStorage.setItem('water_log', JSON.stringify(waterLog));
+            renderWaterTracker();
+        });
+    });
+
+    if (resetWaterBtn) {
+        resetWaterBtn.addEventListener('click', () => {
+            waterLog = [];
+            localStorage.setItem('water_log', JSON.stringify(waterLog));
+            renderWaterTracker();
+        });
+    }
+
+    renderWaterTracker();
+
+    // 3. Affirmation Card Logic
+    const affirmations = [
+        "You are capable of doing amazing things.",
+        "Progress, not perfection.",
+        "Today is a fresh start and a new chance.",
+        "Your hard work will pay off.",
+        "Believe you can and you're halfway there.",
+        "Make today count!",
+        "Every small step brings you closer to your goal."
+    ];
+    const affirmationElement = document.getElementById('daily-affirmation');
+    const nextAffBtn = document.getElementById('next-affirmation-btn');
+
+    let currentAffIndex = parseInt(localStorage.getItem('aff_index') || '0');
+    if (affirmationElement) {
+        affirmationElement.textContent = `"${affirmations[currentAffIndex % affirmations.length]}"`;
+    }
+
+    if (nextAffBtn && affirmationElement) {
+        nextAffBtn.addEventListener('click', () => {
+            currentAffIndex = (currentAffIndex + 1) % affirmations.length;
+            localStorage.setItem('aff_index', currentAffIndex);
+            affirmationElement.textContent = `"${affirmations[currentAffIndex]}"`;
+        });
+    }
+
+    // Helper functions
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+});
+</script>
+{% endblock %}

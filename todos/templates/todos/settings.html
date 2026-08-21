@@ -1,0 +1,181 @@
+{% extends 'todos/base.html' %}
+{% load static %}
+
+{% block title %}Settings - TODO IST{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 24px;">
+    <h1 style="font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">Settings</h1>
+    <p style="color: var(--text-secondary); font-weight: 500; margin-top: 4px;">Customize your TODO IST profile and app experience.</p>
+</div>
+
+<div style="max-width: 650px; margin-top: 24px;">
+    <div class="card" style="padding: 32px 24px; position: relative;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 class="card-title" style="font-size: 18px; margin-bottom: 0;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-8H8a4 4 0 0 0-4 8v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                Personal Profile
+            </h3>
+            <button class="btn btn-secondary" id="edit-profile-btn" style="padding: 6px 12px; font-size: 13px;">Edit Profile</button>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label for="username-input" style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">Display Name</label>
+            <input type="text" id="username-input" class="form-control" placeholder="Enter your name" style="padding: 12px 16px; font-size: 15px; border-radius: 8px;" disabled>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label for="role-input" style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">Role / Profession</label>
+            <input type="text" id="role-input" class="form-control" placeholder="e.g. Senior Designer" style="padding: 12px 16px; font-size: 15px; border-radius: 8px;" disabled>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 24px;">
+            <label for="location-input" style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">Location</label>
+            <input type="text" id="location-input" class="form-control" placeholder="e.g. San Francisco, CA" style="padding: 12px 16px; font-size: 15px; border-radius: 8px;" disabled>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 32px;">
+            <label for="bio-input" style="font-weight: 600; font-size: 14px; margin-bottom: 8px; display: block;">About Me</label>
+            <textarea id="bio-input" class="form-control" placeholder="Write a short bio..." style="padding: 12px 16px; font-size: 15px; border-radius: 8px; min-height: 100px; resize: vertical;" disabled></textarea>
+        </div>
+
+        <button class="btn btn-primary" id="save-profile-btn" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px; font-weight: 600; box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2); display: none;">Save Settings</button>
+    </div>
+
+    <div class="card" style="margin-top: 24px; padding: 32px 24px;">
+        <h3 class="card-title" style="margin-bottom: 24px; font-size: 18px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            Preferences
+        </h3>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--border-color);">
+            <div>
+                <h4 style="font-size: 15px; font-weight: 600;">System Theme</h4>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Default appearance mode for TODO IST.</p>
+            </div>
+            
+            <div class="segmented-control" id="theme-segmented">
+                <div class="segmented-option active" data-value="light">Light</div>
+                <div class="segmented-option" data-value="dark">Dark</div>
+            </div>
+            <input type="hidden" id="pref-theme-select" value="light">
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px 0;">
+            <div>
+                <h4 style="font-size: 15px; font-weight: 600;">Sound Effects</h4>
+                <p style="font-size: 13px; color: var(--text-secondary); margin-top: 4px;">Play sounds when checking off tasks.</p>
+            </div>
+            
+            <label class="premium-toggle">
+                <input type="checkbox" id="sound-checkbox">
+                <span class="premium-toggle-slider"></span>
+            </label>
+        </div>
+    </div>
+    
+    <div style="margin-top: 32px; text-align: center;">
+        <form method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-secondary" style="width: 100%; justify-content: center; padding: 14px; font-size: 15px; font-weight: 600; color: #ef4444; border-color: rgba(239, 68, 68, 0.2); background-color: rgba(239, 68, 68, 0.05);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                Log Out
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const nameInput = document.getElementById('username-input');
+    const roleInput = document.getElementById('role-input');
+    const locationInput = document.getElementById('location-input');
+    const bioInput = document.getElementById('bio-input');
+    
+    const editBtn = document.getElementById('edit-profile-btn');
+    const saveBtn = document.getElementById('save-profile-btn');
+    const themeInput = document.getElementById('pref-theme-select');
+    const themeOptions = document.querySelectorAll('.segmented-option');
+    const soundCheckbox = document.getElementById('sound-checkbox');
+
+    // Load current values
+    const currentUsername = localStorage.getItem('username') || 'Aesthetic User';
+    nameInput.value = currentUsername;
+
+    roleInput.value = localStorage.getItem('profile_role') || '';
+    locationInput.value = localStorage.getItem('profile_location') || '';
+    bioInput.value = localStorage.getItem('profile_bio') || '';
+
+    const currentTheme = localStorage.getItem('theme') || 'light';
+    themeInput.value = currentTheme;
+    
+    // Set active class on correct segmented option
+    themeOptions.forEach(opt => {
+        if (opt.dataset.value === currentTheme) {
+            opt.classList.add('active');
+        } else {
+            opt.classList.remove('active');
+        }
+    });
+
+    const soundEnabled = localStorage.getItem('sound_enabled') === 'true';
+    soundCheckbox.checked = soundEnabled;
+
+    // Segmented control click handler
+    themeOptions.forEach(opt => {
+        opt.addEventListener('click', () => {
+            themeOptions.forEach(o => o.classList.remove('active'));
+            opt.classList.add('active');
+            const newTheme = opt.dataset.value;
+            themeInput.value = newTheme;
+            document.documentElement.setAttribute('data-theme', newTheme);
+        });
+    });
+
+    // Edit Profile Mode
+    editBtn.addEventListener('click', () => {
+        nameInput.disabled = false;
+        roleInput.disabled = false;
+        locationInput.disabled = false;
+        bioInput.disabled = false;
+        
+        editBtn.style.display = 'none';
+        saveBtn.style.display = 'flex';
+        
+        // Focus first field
+        nameInput.focus();
+    });
+
+    // Save events
+    saveBtn.addEventListener('click', () => {
+        const newName = nameInput.value.trim() || 'Aesthetic User';
+        localStorage.setItem('username', newName);
+        
+        localStorage.setItem('profile_role', roleInput.value.trim());
+        localStorage.setItem('profile_location', locationInput.value.trim());
+        localStorage.setItem('profile_bio', bioInput.value.trim());
+        
+        // Disable inputs again
+        nameInput.disabled = true;
+        roleInput.disabled = true;
+        locationInput.disabled = true;
+        bioInput.disabled = true;
+        
+        saveBtn.style.display = 'none';
+        editBtn.style.display = 'inline-block';
+        
+        // Theme selection
+        const newTheme = themeInput.value;
+        localStorage.setItem('theme', newTheme);
+        document.documentElement.setAttribute('data-theme', newTheme);
+
+        // Sound Selection
+        localStorage.setItem('sound_enabled', soundCheckbox.checked);
+
+        alert('Settings saved successfully! ✨');
+    });
+});
+</script>
+{% endblock %}

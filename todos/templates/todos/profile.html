@@ -1,0 +1,147 @@
+{% extends 'todos/base.html' %}
+{% load static %}
+
+{% block title %}User Profile - TODO IST{% endblock %}
+
+{% block content %}
+<div class="dashboard-header" style="margin-bottom: 24px;">
+    <h1 style="font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">User Profile</h1>
+    <p style="color: var(--text-secondary); font-weight: 500; margin-top: 4px;">Track your personal progress, milestones, and daily streaks.</p>
+</div>
+
+<div style="max-width: 650px; margin-top: 24px;">
+    <!-- Profile Card -->
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 20px;">
+        <div class="premium-avatar" id="avatar-letters">AU</div>
+        <div style="margin-top: 16px;">
+            <h2 id="profile-name" style="font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px;">Aesthetic User</h2>
+            
+            <div style="display: flex; gap: 12px; justify-content: center; align-items: center; margin-bottom: 12px;">
+                <span id="profile-role" style="font-size: 13px; font-weight: 600; color: var(--accent-color); background-color: var(--pastel-pink); padding: 4px 10px; border-radius: 12px; display: none;"></span>
+                <span id="profile-location" style="font-size: 13px; font-weight: 500; color: var(--text-secondary); display: none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align: text-bottom; margin-right: 2px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span id="location-text"></span>
+                </span>
+            </div>
+            
+            <p id="profile-bio" style="font-size: 14px; color: var(--text-secondary); font-weight: 500; max-width: 450px; margin: 0 auto 12px auto; display: none; line-height: 1.5;"></p>
+            
+            <p style="font-size: 13px; color: var(--text-secondary); font-weight: 500; opacity: 0.7;">TODO IST member since today</p>
+        </div>
+
+        <div class="profile-stats-grid" style="margin-top: 32px; gap: 20px;">
+            <div class="stat-item-enhanced bg-pastel-pink">
+                <div class="stat-number" id="stats-total-todos" style="font-size: 32px; color: #db2777;">0</div>
+                <div class="stat-label" style="font-size: 13px; font-weight: 600; color: #9d174d;">Total Tasks</div>
+            </div>
+            <div class="stat-item-enhanced bg-pastel-green">
+                <div class="stat-number" id="stats-completed-todos" style="font-size: 32px; color: #059669;">0</div>
+                <div class="stat-label" style="font-size: 13px; font-weight: 600; color: #065f46;">Completed</div>
+            </div>
+            <div class="stat-item-enhanced bg-pastel-blue">
+                <div class="stat-number" id="stats-completion-rate" style="font-size: 32px; color: #2563eb;">0%</div>
+                <div class="stat-label" style="font-size: 13px; font-weight: 600; color: #1e3a8a;">Success Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Milestones/Achievements Card -->
+    <div class="card" style="margin-top: 24px; padding: 24px;">
+        <h3 class="card-title" style="margin-bottom: 20px; font-size: 18px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="8" r="7"></circle><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline></svg>
+            Achievements
+        </h3>
+        
+        <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="achievement-item">
+                <span class="achievement-icon" style="background-color: var(--pastel-green);">🌱</span>
+                <div class="achievement-text">
+                    <h4 style="font-size: 15px; font-weight: 700;">Day One Starter</h4>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Created your very first TODO IST dashboard account.</p>
+                </div>
+            </div>
+            
+            <div class="achievement-item achievement-locked" id="achievement-complete-wrapper">
+                <span id="achievement-complete-icon" class="achievement-icon">🏆</span>
+                <div class="achievement-text">
+                    <h4 style="font-size: 15px; font-weight: 700;" id="achievement-complete-title">First Step Done</h4>
+                    <p style="font-size: 13px; color: var(--text-secondary); margin-top: 2px;">Complete at least one task on your daily planner.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const profileName = document.getElementById('profile-name');
+    const avatarLetters = document.getElementById('avatar-letters');
+    
+    // Stats elements
+    const statsTotal = document.getElementById('stats-total-todos');
+    const statsCompleted = document.getElementById('stats-completed-todos');
+    const statsRate = document.getElementById('stats-completion-rate');
+
+    // Achievements elements
+    const achIcon = document.getElementById('achievement-complete-icon');
+    const achTitle = document.getElementById('achievement-complete-title');
+
+    // Load username and profile data from LocalStorage
+    const username = localStorage.getItem('username') || 'Aesthetic User';
+    profileName.textContent = username;
+
+    const role = localStorage.getItem('profile_role');
+    const location = localStorage.getItem('profile_location');
+    const bio = localStorage.getItem('profile_bio');
+
+    if (role) {
+        document.getElementById('profile-role').textContent = role;
+        document.getElementById('profile-role').style.display = 'inline-block';
+    }
+    
+    if (location) {
+        document.getElementById('location-text').textContent = location;
+        document.getElementById('profile-location').style.display = 'inline-block';
+    }
+
+    if (bio) {
+        document.getElementById('profile-bio').textContent = bio;
+        document.getElementById('profile-bio').style.display = 'block';
+    }
+
+    // Set Avatar Initials
+    const initials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+    avatarLetters.textContent = initials || 'AU';
+
+    // Fetch stats from DRF todo API
+    async function loadStats() {
+        try {
+            const res = await fetch('/api/todos/');
+            if (res.ok) {
+                const todos = await res.json();
+                const total = todos.length;
+                const completed = todos.filter(t => t.completed).length;
+                const rate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+                statsTotal.textContent = total;
+                statsCompleted.textContent = completed;
+                statsRate.textContent = `${rate}%`;
+
+                // Unlock achievement if completed at least one task
+                const achWrapper = document.getElementById('achievement-complete-wrapper');
+                if (completed > 0 && achWrapper && achTitle) {
+                    achWrapper.classList.remove('achievement-locked');
+                    achTitle.innerHTML = 'First Step Done <span style="color: var(--accent-color); font-size: 12px; font-weight: bold; margin-left: 6px;">Unlocked!</span>';
+                }
+            }
+        } catch(e) {
+            console.error("Error loading stats: ", e);
+        }
+    }
+
+    loadStats();
+});
+</script>
+{% endblock %}
