@@ -85,83 +85,55 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // ==========================================
-    // BUILT-IN BESPOKE DATE & TIME PICKER ENGINE
-    // ==========================================
-    let activePickerPopup = null;
-    let activePickerOverlay = null;
+    // =========================================================
+    // GOOGLE APPS / MATERIAL 3 DATE & TIME PICKER DIALOG ENGINE
+    // =========================================================
+    let activeDialogBackdrop = null;
 
-    function closeActivePicker() {
-        if (activePickerPopup) {
-            activePickerPopup.remove();
-            activePickerPopup = null;
-        }
-        if (activePickerOverlay) {
-            activePickerOverlay.remove();
-            activePickerOverlay = null;
+    function closeActiveDialog() {
+        if (activeDialogBackdrop) {
+            activeDialogBackdrop.remove();
+            activeDialogBackdrop = null;
         }
     }
 
-    function createPickerOverlay() {
-        closeActivePicker();
-        const overlay = document.createElement('div');
-        overlay.className = 'custom-picker-overlay';
-        overlay.addEventListener('click', closeActivePicker);
-        document.body.appendChild(overlay);
-        activePickerOverlay = overlay;
-        return overlay;
-    }
+    const monthNamesShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthNamesFull = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    function positionPopup(popup, triggerElement) {
-        const rect = triggerElement.getBoundingClientRect();
-        const popupWidth = 320;
-        let left = rect.left;
-        let top = rect.bottom + 8;
+    // --- GOOGLE MATERIAL DATE PICKER DIALOG ---
+    function openGoogleDatePicker(targetInput) {
+        closeActiveDialog();
 
-        if (left + popupWidth > window.innerWidth - 16) {
-            left = window.innerWidth - popupWidth - 16;
-        }
-        if (left < 16) left = 16;
-
-        if (top + 340 > window.innerHeight && rect.top > 350) {
-            top = rect.top - 340;
-        }
-
-        popup.style.left = `${left}px`;
-        popup.style.top = `${top}px`;
-    }
-
-    // --- CUSTOM DATE PICKER POPUP ---
-    function openCustomDatePicker(targetInput, triggerEl) {
-        createPickerOverlay();
-
-        let selectedYear, selectedMonth, selectedDay;
-        const currentVal = targetInput.value.trim();
+        let selYear, selMonth, selDay;
+        const currentVal = (targetInput.value || '').trim();
         if (currentVal && /^\d{4}-\d{2}-\d{2}$/.test(currentVal)) {
             const parts = currentVal.split('-');
-            selectedYear = parseInt(parts[0], 10);
-            selectedMonth = parseInt(parts[1], 10) - 1;
-            selectedDay = parseInt(parts[2], 10);
+            selYear = parseInt(parts[0], 10);
+            selMonth = parseInt(parts[1], 10) - 1;
+            selDay = parseInt(parts[2], 10);
         } else {
             const now = new Date();
-            selectedYear = now.getFullYear();
-            selectedMonth = now.getMonth();
-            selectedDay = now.getDate();
+            selYear = now.getFullYear();
+            selMonth = now.getMonth();
+            selDay = now.getDate();
         }
 
-        let viewYear = selectedYear;
-        let viewMonth = selectedMonth;
+        let viewYear = selYear;
+        let viewMonth = selMonth;
 
-        const monthNames = [
-            'January', 'February', 'March', 'April', 'May', 'June',
-            'July', 'August', 'September', 'October', 'November', 'December'
-        ];
+        const backdrop = document.createElement('div');
+        backdrop.className = 'g-picker-backdrop';
+        backdrop.id = 'google-datepicker-dialog';
 
-        const popup = document.createElement('div');
-        popup.className = 'custom-picker-popup';
-        popup.id = 'custom-date-picker-popup';
+        const card = document.createElement('div');
+        card.className = 'g-dialog-card';
 
-        function renderCalendar() {
+        function renderDatePicker() {
+            const tempDate = new Date(selYear, selMonth, selDay);
+            const dayName = dayNamesShort[tempDate.getDay()];
+            const headerTitle = `${dayName}, ${monthNamesShort[selMonth]} ${selDay}, ${selYear}`;
+
             const firstDayIndex = new Date(viewYear, viewMonth, 1).getDay();
             const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
             const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
@@ -170,108 +142,129 @@ document.addEventListener('DOMContentLoaded', () => {
             const isTodayMonth = today.getFullYear() === viewYear && today.getMonth() === viewMonth;
 
             let html = `
-                <div class="picker-header">
-                    <button type="button" class="picker-nav-btn" id="dp-prev-month" aria-label="Previous Month">‹</button>
-                    <div class="picker-title">${monthNames[viewMonth]} ${viewYear}</div>
-                    <button type="button" class="picker-nav-btn" id="dp-next-month" aria-label="Next Month">›</button>
+                <div class="g-dialog-header">
+                    <span class="g-dialog-overline">SELECT DATE</span>
+                    <div class="g-dialog-title" id="g-dp-header-text">${headerTitle}</div>
                 </div>
-                <div class="picker-weekdays">
-                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
-                </div>
-                <div class="picker-days-grid">
+                <div class="g-dialog-body">
+                    <div class="g-calendar-nav">
+                        <span class="g-month-label">${monthNamesFull[viewMonth]} ${viewYear}</span>
+                        <div class="g-nav-actions">
+                            <button type="button" class="g-icon-btn" id="g-dp-prev-btn" aria-label="Previous Month">‹</button>
+                            <button type="button" class="g-icon-btn" id="g-dp-next-btn" aria-label="Next Month">›</button>
+                        </div>
+                    </div>
+                    <div class="g-weekdays-row">
+                        <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                    </div>
+                    <div class="g-days-grid">
             `;
 
-            // Prev month padding days
+            // Prev month fill
             for (let i = firstDayIndex - 1; i >= 0; i--) {
-                html += `<div class="picker-day-cell other-month">${daysInPrevMonth - i}</div>`;
+                html += `<div class="g-day-btn other-month">${daysInPrevMonth - i}</div>`;
             }
 
             // Current month days
             for (let d = 1; d <= daysInMonth; d++) {
-                const isSelected = selectedYear === viewYear && selectedMonth === viewMonth && selectedDay === d && currentVal;
+                const isSelected = selYear === viewYear && selMonth === viewMonth && selDay === d;
                 const isToday = isTodayMonth && today.getDate() === d;
-                let cellClass = 'picker-day-cell';
-                if (isSelected) cellClass += ' selected';
-                if (isToday) cellClass += ' today';
+                let classes = 'g-day-btn';
+                if (isSelected) classes += ' selected';
+                if (isToday) classes += ' today';
 
-                html += `<div class="${cellClass}" data-day="${d}">${d}</div>`;
+                html += `<button type="button" class="${classes}" data-day="${d}">${d}</button>`;
             }
 
-            // Next month fill days (up to 42 total cells)
+            // Next month fill
             const totalCells = firstDayIndex + daysInMonth;
             const remaining = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
             for (let n = 1; n <= remaining; n++) {
-                html += `<div class="picker-day-cell other-month">${n}</div>`;
+                html += `<div class="g-day-btn other-month">${n}</div>`;
             }
 
             html += `
+                    </div>
                 </div>
-                <div class="picker-footer">
-                    <button type="button" class="picker-action-btn" id="dp-clear-btn">Clear</button>
-                    <button type="button" class="picker-action-btn" id="dp-today-btn">Today</button>
+                <div class="g-dialog-actions">
+                    <button type="button" class="g-text-btn" id="g-dp-clear">Clear</button>
+                    <div style="flex: 1;"></div>
+                    <button type="button" class="g-text-btn" id="g-dp-cancel">Cancel</button>
+                    <button type="button" class="g-text-btn g-primary-btn" id="g-dp-ok">OK</button>
                 </div>
             `;
 
-            popup.innerHTML = html;
+            card.innerHTML = html;
 
-            // Event Listeners
-            popup.querySelector('#dp-prev-month').addEventListener('click', (e) => {
+            // Nav Listeners
+            card.querySelector('#g-dp-prev-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
                 viewMonth--;
                 if (viewMonth < 0) { viewMonth = 11; viewYear--; }
-                renderCalendar();
+                renderDatePicker();
             });
 
-            popup.querySelector('#dp-next-month').addEventListener('click', (e) => {
+            card.querySelector('#g-dp-next-btn').addEventListener('click', (e) => {
                 e.stopPropagation();
                 viewMonth++;
                 if (viewMonth > 11) { viewMonth = 0; viewYear++; }
-                renderCalendar();
+                renderDatePicker();
             });
 
-            popup.querySelectorAll('.picker-day-cell[data-day]').forEach(cell => {
-                cell.addEventListener('click', (e) => {
+            // Day click
+            card.querySelectorAll('.g-day-btn[data-day]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const day = parseInt(cell.getAttribute('data-day'), 10);
-                    const formatted = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                    targetInput.value = formatted;
-                    targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-                    closeActivePicker();
+                    selDay = parseInt(btn.getAttribute('data-day'), 10);
+                    selMonth = viewMonth;
+                    selYear = viewYear;
+                    renderDatePicker();
                 });
             });
 
-            popup.querySelector('#dp-today-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                const now = new Date();
-                const formatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-                targetInput.value = formatted;
-                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-                closeActivePicker();
-            });
-
-            popup.querySelector('#dp-clear-btn').addEventListener('click', (e) => {
+            // Clear
+            card.querySelector('#g-dp-clear').addEventListener('click', (e) => {
                 e.stopPropagation();
                 targetInput.value = '';
                 targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-                closeActivePicker();
+                closeActiveDialog();
+            });
+
+            // Cancel
+            card.querySelector('#g-dp-cancel').addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeActiveDialog();
+            });
+
+            // OK
+            card.querySelector('#g-dp-ok').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const formatted = `${selYear}-${String(selMonth + 1).padStart(2, '0')}-${String(selDay).padStart(2, '0')}`;
+                targetInput.value = formatted;
+                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                closeActiveDialog();
             });
         }
 
-        renderCalendar();
-        document.body.appendChild(popup);
-        activePickerPopup = popup;
-        positionPopup(popup, triggerEl);
+        renderDatePicker();
+        backdrop.appendChild(card);
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) closeActiveDialog();
+        });
+        document.body.appendChild(backdrop);
+        activeDialogBackdrop = backdrop;
     }
 
-    // --- CUSTOM TIME PICKER POPUP ---
-    function openCustomTimePicker(targetInput, triggerEl) {
-        createPickerOverlay();
+    // --- GOOGLE MATERIAL TIME PICKER DIALOG ---
+    function openGoogleTimePicker(targetInput) {
+        closeActiveDialog();
 
         let selHour = 9;
         let selMinute = 0;
         let selAmPm = 'AM';
+        let activeTab = 'hour'; // 'hour' or 'minute'
 
-        const currentVal = targetInput.value.trim();
+        const currentVal = (targetInput.value || '').trim();
         if (currentVal) {
             const timeParts = currentVal.split(':');
             let h = parseInt(timeParts[0], 10);
@@ -286,103 +279,145 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        const popup = document.createElement('div');
-        popup.className = 'custom-picker-popup';
-        popup.id = 'custom-time-picker-popup';
+        const backdrop = document.createElement('div');
+        backdrop.className = 'g-picker-backdrop';
+        backdrop.id = 'google-timepicker-dialog';
+
+        const card = document.createElement('div');
+        card.className = 'g-dialog-card';
 
         function renderTimePicker() {
-            const displayStr = `${String(selHour).padStart(2, '0')}:${String(selMinute).padStart(2, '0')} ${selAmPm}`;
-
             let html = `
-                <div class="picker-header">
-                    <div class="picker-title">Select Time</div>
-                    <button type="button" class="picker-action-btn" id="tp-clear-btn" style="color:var(--text-secondary);">Clear</button>
+                <div class="g-dialog-header">
+                    <span class="g-dialog-overline">SELECT TIME</span>
+                    <div class="g-time-display-row">
+                        <div class="g-time-box-group">
+                            <button type="button" class="g-time-box ${activeTab === 'hour' ? 'active' : ''}" id="g-tp-tab-hour">
+                                ${String(selHour).padStart(2, '0')}
+                            </button>
+                            <span class="g-time-colon">:</span>
+                            <button type="button" class="g-time-box ${activeTab === 'minute' ? 'active' : ''}" id="g-tp-tab-minute">
+                                ${String(selMinute).padStart(2, '0')}
+                            </button>
+                        </div>
+                        <div class="g-ampm-switch">
+                            <button type="button" class="g-ampm-btn ${selAmPm === 'AM' ? 'active' : ''}" id="g-tp-am-btn">AM</button>
+                            <button type="button" class="g-ampm-btn ${selAmPm === 'PM' ? 'active' : ''}" id="g-tp-pm-btn">PM</button>
+                        </div>
+                    </div>
                 </div>
-                
-                <div class="timepicker-preview">${displayStr}</div>
+                <div class="g-dialog-body">
+                    <div class="g-quick-times-row">
+                        <button type="button" class="g-preset-pill" data-h="9" data-m="0" data-ampm="AM">09:00 AM</button>
+                        <button type="button" class="g-preset-pill" data-h="12" data-m="0" data-ampm="PM">12:00 PM</button>
+                        <button type="button" class="g-preset-pill" data-h="3" data-m="0" data-ampm="PM">03:00 PM</button>
+                        <button type="button" class="g-preset-pill" data-h="6" data-m="0" data-ampm="PM">06:00 PM</button>
+                        <button type="button" class="g-preset-pill" data-h="9" data-m="0" data-ampm="PM">09:00 PM</button>
+                    </div>
 
-                <div class="timepicker-section-title">Hours</div>
-                <div class="timepicker-grid" id="tp-hours-grid">
+                    <div class="g-selector-title">${activeTab === 'hour' ? 'Select Hour (1 - 12)' : 'Select Minutes'}</div>
+                    <div class="g-selector-grid" id="g-tp-grid">
             `;
 
-            for (let h = 1; h <= 12; h++) {
-                const isSel = selHour === h ? 'selected' : '';
-                html += `<div class="timepicker-chip ${isSel}" data-hour="${h}">${String(h).padStart(2, '0')}</div>`;
+            if (activeTab === 'hour') {
+                for (let h = 1; h <= 12; h++) {
+                    const isSel = selHour === h ? 'active' : '';
+                    html += `<button type="button" class="g-grid-chip ${isSel}" data-hour="${h}">${String(h).padStart(2, '0')}</button>`;
+                }
+            } else {
+                const minuteOptions = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+                minuteOptions.forEach(m => {
+                    const isSel = selMinute === m ? 'active' : '';
+                    html += `<button type="button" class="g-grid-chip ${isSel}" data-minute="${m}">:${String(m).padStart(2, '0')}</button>`;
+                });
             }
 
             html += `
+                    </div>
                 </div>
-                <div class="timepicker-section-title">Minutes</div>
-                <div class="timepicker-grid" id="tp-minutes-grid">
+                <div class="g-dialog-actions">
+                    <button type="button" class="g-text-btn" id="g-tp-clear">Clear</button>
+                    <div style="flex: 1;"></div>
+                    <button type="button" class="g-text-btn" id="g-tp-cancel">Cancel</button>
+                    <button type="button" class="g-text-btn g-primary-btn" id="g-tp-ok">OK</button>
+                </div>
             `;
 
-            const minutesList = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
-            minutesList.forEach(m => {
-                const isSel = selMinute === m ? 'selected' : '';
-                html += `<div class="timepicker-chip ${isSel}" data-minute="${m}">:${String(m).padStart(2, '0')}</div>`;
+            card.innerHTML = html;
+
+            // Tab switching
+            card.querySelector('#g-tp-tab-hour').addEventListener('click', (e) => {
+                e.stopPropagation();
+                activeTab = 'hour';
+                renderTimePicker();
             });
 
-            html += `
-                </div>
-                <div class="timepicker-ampm-row">
-                    <div class="ampm-btn ${selAmPm === 'AM' ? 'selected' : ''}" data-ampm="AM">AM</div>
-                    <div class="ampm-btn ${selAmPm === 'PM' ? 'selected' : ''}" data-ampm="PM">PM</div>
-                </div>
+            card.querySelector('#g-tp-tab-minute').addEventListener('click', (e) => {
+                e.stopPropagation();
+                activeTab = 'minute';
+                renderTimePicker();
+            });
 
-                <div class="timepicker-section-title">Quick Presets</div>
-                <div class="timepicker-presets">
-                    <span class="preset-chip" data-h="9" data-m="0" data-ampm="AM">09:00 AM</span>
-                    <span class="preset-chip" data-h="12" data-m="0" data-ampm="PM">12:00 PM</span>
-                    <span class="preset-chip" data-h="3" data-m="0" data-ampm="PM">03:00 PM</span>
-                    <span class="preset-chip" data-h="6" data-m="0" data-ampm="PM">06:00 PM</span>
-                    <span class="preset-chip" data-h="9" data-m="0" data-ampm="PM">09:00 PM</span>
-                </div>
+            // AM/PM
+            card.querySelector('#g-tp-am-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                selAmPm = 'AM';
+                renderTimePicker();
+            });
 
-                <button type="button" class="timepicker-confirm-btn" id="tp-confirm-btn">Confirm Time</button>
-            `;
+            card.querySelector('#g-tp-pm-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                selAmPm = 'PM';
+                renderTimePicker();
+            });
 
-            popup.innerHTML = html;
-
-            // Hour selection
-            popup.querySelectorAll('#tp-hours-grid .timepicker-chip').forEach(chip => {
-                chip.addEventListener('click', (e) => {
+            // Preset pills
+            card.querySelectorAll('.g-preset-pill').forEach(pill => {
+                pill.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    selHour = parseInt(chip.getAttribute('data-hour'), 10);
+                    selHour = parseInt(pill.getAttribute('data-h'), 10);
+                    selMinute = parseInt(pill.getAttribute('data-m'), 10);
+                    selAmPm = pill.getAttribute('data-ampm');
                     renderTimePicker();
                 });
             });
 
-            // Minute selection
-            popup.querySelectorAll('#tp-minutes-grid .timepicker-chip').forEach(chip => {
-                chip.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    selMinute = parseInt(chip.getAttribute('data-minute'), 10);
-                    renderTimePicker();
+            // Grid chips
+            if (activeTab === 'hour') {
+                card.querySelectorAll('.g-grid-chip[data-hour]').forEach(chip => {
+                    chip.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selHour = parseInt(chip.getAttribute('data-hour'), 10);
+                        activeTab = 'minute'; // Automatically step to minutes like Google Material Time Picker!
+                        renderTimePicker();
+                    });
                 });
+            } else {
+                card.querySelectorAll('.g-grid-chip[data-minute]').forEach(chip => {
+                    chip.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        selMinute = parseInt(chip.getAttribute('data-minute'), 10);
+                        renderTimePicker();
+                    });
+                });
+            }
+
+            // Clear
+            card.querySelector('#g-tp-clear').addEventListener('click', (e) => {
+                e.stopPropagation();
+                targetInput.value = '';
+                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                closeActiveDialog();
             });
 
-            // AM/PM selection
-            popup.querySelectorAll('.ampm-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    selAmPm = btn.getAttribute('data-ampm');
-                    renderTimePicker();
-                });
+            // Cancel
+            card.querySelector('#g-tp-cancel').addEventListener('click', (e) => {
+                e.stopPropagation();
+                closeActiveDialog();
             });
 
-            // Presets
-            popup.querySelectorAll('.preset-chip').forEach(chip => {
-                chip.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    selHour = parseInt(chip.getAttribute('data-h'), 10);
-                    selMinute = parseInt(chip.getAttribute('data-m'), 10);
-                    selAmPm = chip.getAttribute('data-ampm');
-                    renderTimePicker();
-                });
-            });
-
-            // Confirm
-            popup.querySelector('#tp-confirm-btn').addEventListener('click', (e) => {
+            // OK
+            card.querySelector('#g-tp-ok').addEventListener('click', (e) => {
                 e.stopPropagation();
                 let hour24 = selHour;
                 if (selAmPm === 'AM' && hour24 === 12) hour24 = 0;
@@ -390,25 +425,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 const formattedTime = `${String(hour24).padStart(2, '0')}:${String(selMinute).padStart(2, '0')}`;
                 targetInput.value = formattedTime;
                 targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-                closeActivePicker();
-            });
-
-            // Clear
-            popup.querySelector('#tp-clear-btn').addEventListener('click', (e) => {
-                e.stopPropagation();
-                targetInput.value = '';
-                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
-                closeActivePicker();
+                closeActiveDialog();
             });
         }
 
         renderTimePicker();
-        document.body.appendChild(popup);
-        activePickerPopup = popup;
-        positionPopup(popup, triggerEl);
+        backdrop.appendChild(card);
+        backdrop.addEventListener('click', (e) => {
+            if (e.target === backdrop) closeActiveDialog();
+        });
+        document.body.appendChild(backdrop);
+        activeDialogBackdrop = backdrop;
     }
 
-    // Attach click triggers globally
+    // Attach click listeners globally to date/time triggers
     function initCustomPickerTriggers() {
         document.addEventListener('click', (e) => {
             const trigger = e.target.closest('.custom-picker-trigger');
@@ -418,9 +448,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const targetInput = document.getElementById(targetId);
                 if (targetInput) {
                     if (targetType === 'date') {
-                        openCustomDatePicker(targetInput, trigger);
+                        openGoogleDatePicker(targetInput);
                     } else if (targetType === 'time') {
-                        openCustomTimePicker(targetInput, trigger);
+                        openGoogleTimePicker(targetInput);
                     }
                 }
                 return;
@@ -428,9 +458,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // Direct input clicks
             if (e.target.classList.contains('custom-date-input')) {
-                openCustomDatePicker(e.target, e.target);
+                openGoogleDatePicker(e.target);
             } else if (e.target.classList.contains('custom-time-input')) {
-                openCustomTimePicker(e.target, e.target);
+                openGoogleTimePicker(e.target);
             }
         });
     }
@@ -458,7 +488,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalInputDueTime = document.getElementById('modal-input-due-time');
     
     // Labels UI
-    const labelPills = document.querySelectorAll('.label-pill');
+    const labelPills = document.querySelectorAll('#task-modal .label-pill');
     
     // CSRF Helper
     function getCookie(name) {
@@ -511,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function closeModal() {
         taskModal.classList.remove('open');
-        closeActivePicker();
+        closeActiveDialog();
         if (modalInputTitle) modalInputTitle.value = '';
         if (modalInputDesc) modalInputDesc.value = '';
         if (modalInputPriority) modalInputPriority.value = 'medium';
