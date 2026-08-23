@@ -1,9 +1,10 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Sidebar toggle functionality
+    // ==========================================
+    // SIDEBAR DRAWER TOGGLE FUNCTIONALITY
+    // ==========================================
     const sidebarToggleBtn = document.getElementById('sidebar-toggle');
     const sidebar = document.getElementById('app-sidebar');
 
-    // Create overlay for click-outside-to-close on mobile
     const overlay = document.createElement('div');
     overlay.id = 'sidebar-overlay';
     overlay.style.cssText = `
@@ -13,28 +14,32 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.appendChild(overlay);
 
     function openSidebar() {
+        if (!sidebar) return;
         sidebar.classList.add('open');
         overlay.style.display = 'block';
-        sidebarToggleBtn.setAttribute('aria-expanded', 'true');
-        // Animate hamburger → X
-        sidebarToggleBtn.innerHTML = `
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>`;
+        if (sidebarToggleBtn) {
+            sidebarToggleBtn.setAttribute('aria-expanded', 'true');
+            sidebarToggleBtn.innerHTML = `
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>`;
+        }
     }
 
     function closeSidebar() {
+        if (!sidebar) return;
         sidebar.classList.remove('open');
         overlay.style.display = 'none';
-        sidebarToggleBtn.setAttribute('aria-expanded', 'false');
-        // Animate X → hamburger
-        sidebarToggleBtn.innerHTML = `
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="4" y1="12" x2="20" y2="12"></line>
-                <line x1="4" y1="6" x2="20" y2="6"></line>
-                <line x1="4" y1="18" x2="20" y2="18"></line>
-            </svg>`;
+        if (sidebarToggleBtn) {
+            sidebarToggleBtn.setAttribute('aria-expanded', 'false');
+            sidebarToggleBtn.innerHTML = `
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="4" y1="12" x2="20" y2="12"></line>
+                    <line x1="4" y1="6" x2="20" y2="6"></line>
+                    <line x1="4" y1="18" x2="20" y2="18"></line>
+                </svg>`;
+        }
     }
 
     if (sidebarToggleBtn && sidebar) {
@@ -48,13 +53,14 @@ document.addEventListener('DOMContentLoaded', () => {
         overlay.addEventListener('click', closeSidebar);
     }
 
-    // Theme Switcher functionality
+    // ==========================================
+    // THEME SWITCHER FUNCTIONALITY
+    // ==========================================
     const themeToggleBtn = document.getElementById('theme-toggle');
     const htmlElement = document.documentElement;
     const darkIcon = document.querySelector('.theme-icon-dark');
     const lightIcon = document.querySelector('.theme-icon-light');
 
-    // Load theme from localStorage or default to system
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
 
@@ -78,11 +84,362 @@ document.addEventListener('DOMContentLoaded', () => {
             if (lightIcon) lightIcon.style.display = 'none';
         }
     }
-});
 
+    // ==========================================
+    // BUILT-IN BESPOKE DATE & TIME PICKER ENGINE
+    // ==========================================
+    let activePickerPopup = null;
+    let activePickerOverlay = null;
 
-// --- GLOBAL TASK MODAL LOGIC ---
-document.addEventListener('DOMContentLoaded', () => {
+    function closeActivePicker() {
+        if (activePickerPopup) {
+            activePickerPopup.remove();
+            activePickerPopup = null;
+        }
+        if (activePickerOverlay) {
+            activePickerOverlay.remove();
+            activePickerOverlay = null;
+        }
+    }
+
+    function createPickerOverlay() {
+        closeActivePicker();
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-picker-overlay';
+        overlay.addEventListener('click', closeActivePicker);
+        document.body.appendChild(overlay);
+        activePickerOverlay = overlay;
+        return overlay;
+    }
+
+    function positionPopup(popup, triggerElement) {
+        const rect = triggerElement.getBoundingClientRect();
+        const popupWidth = 320;
+        let left = rect.left;
+        let top = rect.bottom + 8;
+
+        if (left + popupWidth > window.innerWidth - 16) {
+            left = window.innerWidth - popupWidth - 16;
+        }
+        if (left < 16) left = 16;
+
+        if (top + 340 > window.innerHeight && rect.top > 350) {
+            top = rect.top - 340;
+        }
+
+        popup.style.left = `${left}px`;
+        popup.style.top = `${top}px`;
+    }
+
+    // --- CUSTOM DATE PICKER POPUP ---
+    function openCustomDatePicker(targetInput, triggerEl) {
+        createPickerOverlay();
+
+        let selectedYear, selectedMonth, selectedDay;
+        const currentVal = targetInput.value.trim();
+        if (currentVal && /^\d{4}-\d{2}-\d{2}$/.test(currentVal)) {
+            const parts = currentVal.split('-');
+            selectedYear = parseInt(parts[0], 10);
+            selectedMonth = parseInt(parts[1], 10) - 1;
+            selectedDay = parseInt(parts[2], 10);
+        } else {
+            const now = new Date();
+            selectedYear = now.getFullYear();
+            selectedMonth = now.getMonth();
+            selectedDay = now.getDate();
+        }
+
+        let viewYear = selectedYear;
+        let viewMonth = selectedMonth;
+
+        const monthNames = [
+            'January', 'February', 'March', 'April', 'May', 'June',
+            'July', 'August', 'September', 'October', 'November', 'December'
+        ];
+
+        const popup = document.createElement('div');
+        popup.className = 'custom-picker-popup';
+        popup.id = 'custom-date-picker-popup';
+
+        function renderCalendar() {
+            const firstDayIndex = new Date(viewYear, viewMonth, 1).getDay();
+            const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+            const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+
+            const today = new Date();
+            const isTodayMonth = today.getFullYear() === viewYear && today.getMonth() === viewMonth;
+
+            let html = `
+                <div class="picker-header">
+                    <button type="button" class="picker-nav-btn" id="dp-prev-month" aria-label="Previous Month">‹</button>
+                    <div class="picker-title">${monthNames[viewMonth]} ${viewYear}</div>
+                    <button type="button" class="picker-nav-btn" id="dp-next-month" aria-label="Next Month">›</button>
+                </div>
+                <div class="picker-weekdays">
+                    <span>Su</span><span>Mo</span><span>Tu</span><span>We</span><span>Th</span><span>Fr</span><span>Sa</span>
+                </div>
+                <div class="picker-days-grid">
+            `;
+
+            // Prev month padding days
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                html += `<div class="picker-day-cell other-month">${daysInPrevMonth - i}</div>`;
+            }
+
+            // Current month days
+            for (let d = 1; d <= daysInMonth; d++) {
+                const isSelected = selectedYear === viewYear && selectedMonth === viewMonth && selectedDay === d && currentVal;
+                const isToday = isTodayMonth && today.getDate() === d;
+                let cellClass = 'picker-day-cell';
+                if (isSelected) cellClass += ' selected';
+                if (isToday) cellClass += ' today';
+
+                html += `<div class="${cellClass}" data-day="${d}">${d}</div>`;
+            }
+
+            // Next month fill days (up to 42 total cells)
+            const totalCells = firstDayIndex + daysInMonth;
+            const remaining = totalCells <= 35 ? 35 - totalCells : 42 - totalCells;
+            for (let n = 1; n <= remaining; n++) {
+                html += `<div class="picker-day-cell other-month">${n}</div>`;
+            }
+
+            html += `
+                </div>
+                <div class="picker-footer">
+                    <button type="button" class="picker-action-btn" id="dp-clear-btn">Clear</button>
+                    <button type="button" class="picker-action-btn" id="dp-today-btn">Today</button>
+                </div>
+            `;
+
+            popup.innerHTML = html;
+
+            // Event Listeners
+            popup.querySelector('#dp-prev-month').addEventListener('click', (e) => {
+                e.stopPropagation();
+                viewMonth--;
+                if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+                renderCalendar();
+            });
+
+            popup.querySelector('#dp-next-month').addEventListener('click', (e) => {
+                e.stopPropagation();
+                viewMonth++;
+                if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+                renderCalendar();
+            });
+
+            popup.querySelectorAll('.picker-day-cell[data-day]').forEach(cell => {
+                cell.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const day = parseInt(cell.getAttribute('data-day'), 10);
+                    const formatted = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    targetInput.value = formatted;
+                    targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    closeActivePicker();
+                });
+            });
+
+            popup.querySelector('#dp-today-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                const now = new Date();
+                const formatted = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                targetInput.value = formatted;
+                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                closeActivePicker();
+            });
+
+            popup.querySelector('#dp-clear-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                targetInput.value = '';
+                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                closeActivePicker();
+            });
+        }
+
+        renderCalendar();
+        document.body.appendChild(popup);
+        activePickerPopup = popup;
+        positionPopup(popup, triggerEl);
+    }
+
+    // --- CUSTOM TIME PICKER POPUP ---
+    function openCustomTimePicker(targetInput, triggerEl) {
+        createPickerOverlay();
+
+        let selHour = 9;
+        let selMinute = 0;
+        let selAmPm = 'AM';
+
+        const currentVal = targetInput.value.trim();
+        if (currentVal) {
+            const timeParts = currentVal.split(':');
+            let h = parseInt(timeParts[0], 10);
+            const m = parseInt(timeParts[1] || '0', 10);
+            if (!isNaN(h) && !isNaN(m)) {
+                if (h === 0) { selHour = 12; selAmPm = 'AM'; }
+                else if (h === 12) { selHour = 12; selAmPm = 'PM'; }
+                else if (h > 12) { selHour = h - 12; selAmPm = 'PM'; }
+                else { selHour = h; selAmPm = 'AM'; }
+                selMinute = Math.round(m / 5) * 5;
+                if (selMinute >= 60) selMinute = 55;
+            }
+        }
+
+        const popup = document.createElement('div');
+        popup.className = 'custom-picker-popup';
+        popup.id = 'custom-time-picker-popup';
+
+        function renderTimePicker() {
+            const displayStr = `${String(selHour).padStart(2, '0')}:${String(selMinute).padStart(2, '0')} ${selAmPm}`;
+
+            let html = `
+                <div class="picker-header">
+                    <div class="picker-title">Select Time</div>
+                    <button type="button" class="picker-action-btn" id="tp-clear-btn" style="color:var(--text-secondary);">Clear</button>
+                </div>
+                
+                <div class="timepicker-preview">${displayStr}</div>
+
+                <div class="timepicker-section-title">Hours</div>
+                <div class="timepicker-grid" id="tp-hours-grid">
+            `;
+
+            for (let h = 1; h <= 12; h++) {
+                const isSel = selHour === h ? 'selected' : '';
+                html += `<div class="timepicker-chip ${isSel}" data-hour="${h}">${String(h).padStart(2, '0')}</div>`;
+            }
+
+            html += `
+                </div>
+                <div class="timepicker-section-title">Minutes</div>
+                <div class="timepicker-grid" id="tp-minutes-grid">
+            `;
+
+            const minutesList = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+            minutesList.forEach(m => {
+                const isSel = selMinute === m ? 'selected' : '';
+                html += `<div class="timepicker-chip ${isSel}" data-minute="${m}">:${String(m).padStart(2, '0')}</div>`;
+            });
+
+            html += `
+                </div>
+                <div class="timepicker-ampm-row">
+                    <div class="ampm-btn ${selAmPm === 'AM' ? 'selected' : ''}" data-ampm="AM">AM</div>
+                    <div class="ampm-btn ${selAmPm === 'PM' ? 'selected' : ''}" data-ampm="PM">PM</div>
+                </div>
+
+                <div class="timepicker-section-title">Quick Presets</div>
+                <div class="timepicker-presets">
+                    <span class="preset-chip" data-h="9" data-m="0" data-ampm="AM">09:00 AM</span>
+                    <span class="preset-chip" data-h="12" data-m="0" data-ampm="PM">12:00 PM</span>
+                    <span class="preset-chip" data-h="3" data-m="0" data-ampm="PM">03:00 PM</span>
+                    <span class="preset-chip" data-h="6" data-m="0" data-ampm="PM">06:00 PM</span>
+                    <span class="preset-chip" data-h="9" data-m="0" data-ampm="PM">09:00 PM</span>
+                </div>
+
+                <button type="button" class="timepicker-confirm-btn" id="tp-confirm-btn">Confirm Time</button>
+            `;
+
+            popup.innerHTML = html;
+
+            // Hour selection
+            popup.querySelectorAll('#tp-hours-grid .timepicker-chip').forEach(chip => {
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selHour = parseInt(chip.getAttribute('data-hour'), 10);
+                    renderTimePicker();
+                });
+            });
+
+            // Minute selection
+            popup.querySelectorAll('#tp-minutes-grid .timepicker-chip').forEach(chip => {
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selMinute = parseInt(chip.getAttribute('data-minute'), 10);
+                    renderTimePicker();
+                });
+            });
+
+            // AM/PM selection
+            popup.querySelectorAll('.ampm-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selAmPm = btn.getAttribute('data-ampm');
+                    renderTimePicker();
+                });
+            });
+
+            // Presets
+            popup.querySelectorAll('.preset-chip').forEach(chip => {
+                chip.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    selHour = parseInt(chip.getAttribute('data-h'), 10);
+                    selMinute = parseInt(chip.getAttribute('data-m'), 10);
+                    selAmPm = chip.getAttribute('data-ampm');
+                    renderTimePicker();
+                });
+            });
+
+            // Confirm
+            popup.querySelector('#tp-confirm-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                let hour24 = selHour;
+                if (selAmPm === 'AM' && hour24 === 12) hour24 = 0;
+                if (selAmPm === 'PM' && hour24 < 12) hour24 += 12;
+                const formattedTime = `${String(hour24).padStart(2, '0')}:${String(selMinute).padStart(2, '0')}`;
+                targetInput.value = formattedTime;
+                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                closeActivePicker();
+            });
+
+            // Clear
+            popup.querySelector('#tp-clear-btn').addEventListener('click', (e) => {
+                e.stopPropagation();
+                targetInput.value = '';
+                targetInput.dispatchEvent(new Event('change', { bubbles: true }));
+                closeActivePicker();
+            });
+        }
+
+        renderTimePicker();
+        document.body.appendChild(popup);
+        activePickerPopup = popup;
+        positionPopup(popup, triggerEl);
+    }
+
+    // Attach click triggers globally
+    function initCustomPickerTriggers() {
+        document.addEventListener('click', (e) => {
+            const trigger = e.target.closest('.custom-picker-trigger');
+            if (trigger) {
+                const targetId = trigger.getAttribute('data-target');
+                const targetType = trigger.getAttribute('data-type');
+                const targetInput = document.getElementById(targetId);
+                if (targetInput) {
+                    if (targetType === 'date') {
+                        openCustomDatePicker(targetInput, trigger);
+                    } else if (targetType === 'time') {
+                        openCustomTimePicker(targetInput, trigger);
+                    }
+                }
+                return;
+            }
+
+            // Direct input clicks
+            if (e.target.classList.contains('custom-date-input')) {
+                openCustomDatePicker(e.target, e.target);
+            } else if (e.target.classList.contains('custom-time-input')) {
+                openCustomTimePicker(e.target, e.target);
+            }
+        });
+    }
+
+    initCustomPickerTriggers();
+
+    // ==========================================
+    // GLOBAL TASK MODAL LOGIC
+    // ==========================================
     const taskModal = document.getElementById('task-modal');
     if (!taskModal) return;
 
@@ -123,7 +480,7 @@ document.addEventListener('DOMContentLoaded', () => {
     labelPills.forEach(pill => {
         pill.addEventListener('click', () => {
             pill.classList.toggle('active');
-            if(pill.classList.contains('active')) {
+            if (pill.classList.contains('active')) {
                 pill.style.boxShadow = '0 0 0 2px white, 0 0 0 4px ' + getComputedStyle(pill).backgroundColor;
             } else {
                 pill.style.boxShadow = 'none';
@@ -134,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function getSelectedLabels() {
         let labels = [];
         labelPills.forEach(pill => {
-            if(pill.classList.contains('active')) {
+            if (pill.classList.contains('active')) {
                 labels.push(pill.getAttribute('data-label'));
             }
         });
@@ -148,47 +505,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Global Flatpickr Initializer
-    function initFlatpickr() {
-        if (typeof flatpickr !== 'undefined') {
-            flatpickr('.date-picker', {
-                dateFormat: 'Y-m-d',
-                altInput: true,
-                altFormat: 'F j, Y',
-                disableMobile: true,
-                animate: true
-            });
-            flatpickr('.time-picker', {
-                enableTime: true,
-                noCalendar: true,
-                dateFormat: 'H:i',
-                altInput: true,
-                altFormat: 'h:i K',
-                disableMobile: true,
-                animate: true
-            });
-        }
-    }
-
-    initFlatpickr();
-
     function openModal() {
         taskModal.classList.add('open');
     }
 
     function closeModal() {
         taskModal.classList.remove('open');
+        closeActivePicker();
         if (modalInputTitle) modalInputTitle.value = '';
         if (modalInputDesc) modalInputDesc.value = '';
         if (modalInputPriority) modalInputPriority.value = 'medium';
-        if (modalInputDueDate) {
-            if (modalInputDueDate._flatpickr) modalInputDueDate._flatpickr.clear();
-            else modalInputDueDate.value = '';
-        }
-        if (modalInputDueTime) {
-            if (modalInputDueTime._flatpickr) modalInputDueTime._flatpickr.clear();
-            else modalInputDueTime.value = '';
-        }
+        if (modalInputDueDate) modalInputDueDate.value = '';
+        if (modalInputDueTime) modalInputDueTime.value = '';
         if (modalTaskId) modalTaskId.value = '';
         clearSelectedLabels();
     }
@@ -206,18 +534,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalTaskId) modalTaskId.value = '';
         
         if (modalInputDueDate && e.detail.dueDate) {
-            if (modalInputDueDate._flatpickr) {
-                modalInputDueDate._flatpickr.setDate(e.detail.dueDate, true);
-            } else {
-                modalInputDueDate.value = e.detail.dueDate;
-            }
+            modalInputDueDate.value = e.detail.dueDate;
         }
         if (modalInputDueTime && e.detail.dueTime) {
-            if (modalInputDueTime._flatpickr) {
-                modalInputDueTime._flatpickr.setDate(e.detail.dueTime, true);
-            } else {
-                modalInputDueTime.value = e.detail.dueTime;
-            }
+            modalInputDueTime.value = e.detail.dueTime;
         }
         openModal();
     });
