@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
+    color-scheme: light;
     /* Color Palette - Baby Pink UI for Light Mode */
     --bg-primary: #fff0f3; /* Baby pink */
     --bg-secondary: #ffffff; /* White cards */
@@ -10,6 +11,9 @@
     --accent-color: #ec4899; /* Pink accent */
     --accent-hover: #db2777;
     --border-color: #ffd1dc; /* Soft pink border */
+    --input-bg: #ffffff;
+    --input-focus-ring: rgba(236, 72, 153, 0.2);
+    --picker-icon-filter: invert(0.4) sepia(1) saturate(5) hue-rotate(295deg);
     
     /* Cute Pastel Blocks */
     --pastel-blue: #e0f2fe;
@@ -20,8 +24,8 @@
     --pastel-orange: #ffedd5;
     
     /* Shadows & Borders */
-    --card-shadow: 0 8px 24px -4px rgba(236, 72, 153, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
-    --hover-shadow: 0 16px 32px -8px rgba(236, 72, 153, 0.15);
+    --card-shadow: 0 8px 24px -4px rgba(236, 72, 153, 0.08), 0 1px 3px rgba(0, 0, 0, 0.02);
+    --hover-shadow: 0 16px 32px -8px rgba(236, 72, 153, 0.18);
     --border-radius-lg: 24px;
     --border-radius-md: 16px;
     --border-radius-sm: 8px;
@@ -30,26 +34,30 @@
 }
 
 [data-theme="dark"] {
-    /* Color Palette - Dark Blue UI for Dark Mode */
-    --bg-primary: #0b132b; /* Deep dark blue background */
-    --bg-secondary: #1c2541; /* Deep navy blue cards */
-    --bg-sidebar: #0b132b;
-    --text-primary: #f8fafc; /* Clear text */
-    --text-secondary: #94a3b8; /* Muted gray text */
-    --accent-color: #6366f1; /* Indigo accent */
-    --accent-hover: #4f46e5;
-    --border-color: #3a506b; /* Slate blue border */
+    color-scheme: dark;
+    /* High-contrast, Sleek Obsidian & Midnight Palette */
+    --bg-primary: #0a0f1d; /* Deep obsidian background */
+    --bg-secondary: #131b2e; /* Elevated midnight card background */
+    --bg-sidebar: #0e1628;
+    --text-primary: #f8fafc; /* Crisp white-slate text (WCAG AAA) */
+    --text-secondary: #94a3b8; /* Muted slate text with clear contrast */
+    --accent-color: #ec4899; /* Vibrant neon pink accent matching brand */
+    --accent-hover: #f43f5e;
+    --border-color: rgba(255, 255, 255, 0.12); /* Subtle glowing border */
+    --input-bg: #0e1628;
+    --input-focus-ring: rgba(236, 72, 153, 0.35);
+    --picker-icon-filter: invert(0.9) brightness(1.2);
     
-    /* Cute Pastel Blocks in Dark Mode */
-    --pastel-blue: #1e3a8a;
-    --pastel-green: #064e3b;
-    --pastel-purple: #581c87;
-    --pastel-pink: #701a75;
-    --pastel-yellow: #713f12;
-    --pastel-orange: #7c2d12;
+    /* Sleek Translucent Neon Tinted Blocks */
+    --pastel-blue: rgba(56, 189, 248, 0.15);
+    --pastel-green: rgba(52, 211, 153, 0.15);
+    --pastel-purple: rgba(192, 132, 252, 0.15);
+    --pastel-pink: rgba(244, 114, 182, 0.15);
+    --pastel-yellow: rgba(251, 191, 36, 0.15);
+    --pastel-orange: rgba(251, 146, 60, 0.15);
     
-    --card-shadow: 0 8px 24px -4px rgba(0, 0, 0, 0.3);
-    --hover-shadow: 0 16px 32px -8px rgba(99, 102, 241, 0.3);
+    --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+    --hover-shadow: 0 16px 36px -5px rgba(0, 0, 0, 0.7), 0 0 24px rgba(236, 72, 153, 0.25);
 }
 
 * {
@@ -286,14 +294,22 @@ a {
     background-color: var(--pastel-orange);
     color: var(--text-primary);
     border-radius: var(--border-radius-lg);
-    padding: 20px;
-    border: 1px solid transparent;
+    padding: 24px;
+    border: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    min-height: 150px;
+    min-height: 160px;
     position: relative;
     overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: var(--transition-smooth);
+}
+
+[data-theme="dark"] .pastel-panel {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.08), rgba(99, 102, 241, 0.08)), var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
 
 .pastel-panel::before {
@@ -307,6 +323,10 @@ a {
     border-radius: 50%;
 }
 
+[data-theme="dark"] .pastel-panel::before {
+    background-color: rgba(236, 72, 153, 0.1);
+}
+
 .live-time-block {
     display: flex;
     flex-direction: column;
@@ -316,6 +336,7 @@ a {
     font-size: 36px;
     font-weight: 700;
     letter-spacing: -1px;
+    color: var(--text-primary);
 }
 
 .live-date {
@@ -330,14 +351,15 @@ a {
     align-items: center;
     justify-content: space-between;
     margin-top: 24px;
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.5);
     padding: 12px 18px;
     border-radius: var(--border-radius-md);
     backdrop-filter: blur(4px);
 }
 
 [data-theme="dark"] .weather-info {
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .weather-temp {
@@ -514,6 +536,7 @@ a {
     display: flex;
     align-items: center;
     gap: 6px;
+    color: var(--text-secondary);
 }
 
 .legend-dot {
@@ -529,6 +552,19 @@ a {
 .dot-ongoing {
     background-color: var(--pastel-yellow);
     border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .donut-ring {
+    stroke: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme="dark"] .donut-segment {
+    filter: drop-shadow(0 0 6px rgba(236, 72, 153, 0.4));
+}
+
+[data-theme="dark"] .dot-ongoing {
+    background-color: rgba(251, 191, 36, 0.8);
+    border: 1px solid rgba(251, 191, 36, 0.4);
 }
 
 /* Weekly Pending List under chart */
@@ -661,7 +697,7 @@ a {
     background-color: var(--bg-primary);
 }
 
-/* Forms UI */
+/* Forms & Inputs UI */
 .form-row {
     display: flex;
     gap: 16px;
@@ -682,21 +718,116 @@ a {
     color: var(--text-secondary);
 }
 
-.form-control {
+.form-control,
+input[type="text"].form-control,
+input[type="password"].form-control,
+input[type="email"].form-control,
+input[type="date"].form-control,
+input[type="time"].form-control,
+textarea.form-control,
+select.form-control {
     font-family: var(--font-sans);
-    padding: 10px 14px;
+    padding: 11px 14px;
     border-radius: var(--border-radius-sm);
     border: 1px solid var(--border-color);
-    background-color: var(--bg-secondary);
+    background-color: var(--input-bg);
     color: var(--text-primary);
     font-size: 14px;
+    font-weight: 500;
     transition: var(--transition-smooth);
+    width: 100%;
 }
 
-.form-control:focus {
+.form-control:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+input[type="date"]:focus,
+input[type="time"]:focus,
+textarea:focus,
+select:focus {
     outline: none;
     border-color: var(--accent-color);
-    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.15);
+    box-shadow: 0 0 0 3px var(--input-focus-ring);
+}
+
+.form-control::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.65;
+}
+
+/* Date and Time Picker Indicators (Theme Matched) */
+input[type="date"],
+input[type="time"],
+.form-control-new[type="date"],
+.form-control-new[type="time"] {
+    cursor: pointer;
+    color-scheme: light;
+}
+
+[data-theme="dark"] input[type="date"],
+[data-theme="dark"] input[type="time"],
+[data-theme="dark"] .form-control-new[type="date"],
+[data-theme="dark"] .form-control-new[type="time"] {
+    color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+.form-control-new[type="date"]::-webkit-calendar-picker-indicator,
+.form-control-new[type="time"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    filter: var(--picker-icon-filter);
+    transition: var(--transition-smooth);
+    opacity: 0.85;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover,
+.form-control-new[type="date"]::-webkit-calendar-picker-indicator:hover,
+.form-control-new[type="time"]::-webkit-calendar-picker-indicator:hover {
+    transform: scale(1.15);
+    opacity: 1;
+    background-color: var(--pastel-pink);
+}
+
+[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] .form-control-new[type="date"]::-webkit-calendar-picker-indicator:hover,
+[data-theme="dark"] .form-control-new[type="time"]::-webkit-calendar-picker-indicator:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
+input[type="date"]::-webkit-datetime-edit,
+input[type="time"]::-webkit-datetime-edit,
+.form-control-new[type="date"]::-webkit-datetime-edit,
+.form-control-new[type="time"]::-webkit-datetime-edit {
+    color: var(--text-primary);
+    font-weight: 500;
+}
+
+select.form-control,
+.form-control-select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%238a6a6f' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 38px;
+    cursor: pointer;
+}
+
+[data-theme="dark"] select.form-control,
+[data-theme="dark"] .form-control-select {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+}
+
+select option {
+    background-color: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 10px;
 }
 
 /* Buttons UI */
@@ -721,6 +852,7 @@ a {
 .btn-primary:hover {
     background-color: var(--accent-hover);
     transform: translateY(-1px);
+    box-shadow: 0 6px 16px -2px rgba(236, 72, 153, 0.35);
 }
 
 .btn-secondary {
@@ -833,14 +965,36 @@ a {
 .badge {
     font-size: 11px;
     font-weight: 600;
-    padding: 3px 8px;
+    padding: 3px 9px;
     border-radius: 12px;
+    letter-spacing: 0.2px;
 }
 
 .badge-low { background-color: var(--pastel-green); color: #166534; }
 .badge-medium { background-color: var(--pastel-yellow); color: #854d0e; }
 .badge-high { background-color: var(--pastel-pink); color: #9d174d; }
 .badge-date { background-color: var(--pastel-blue); color: #1e40af; }
+
+[data-theme="dark"] .badge-low { 
+    background-color: rgba(34, 197, 94, 0.16); 
+    color: #4ade80; 
+    border: 1px solid rgba(34, 197, 94, 0.3); 
+}
+[data-theme="dark"] .badge-medium { 
+    background-color: rgba(234, 179, 8, 0.16); 
+    color: #facc15; 
+    border: 1px solid rgba(234, 179, 8, 0.3); 
+}
+[data-theme="dark"] .badge-high { 
+    background-color: rgba(244, 63, 94, 0.16); 
+    color: #fb7185; 
+    border: 1px solid rgba(244, 63, 94, 0.3); 
+}
+[data-theme="dark"] .badge-date { 
+    background-color: rgba(56, 189, 248, 0.16); 
+    color: #38bdf8; 
+    border: 1px solid rgba(56, 189, 248, 0.3); 
+}
 
 .todo-item-right {
     display: flex;
@@ -924,6 +1078,22 @@ a {
     border: 2px solid var(--accent-color);
 }
 
+[data-theme="dark"] .full-calendar-day {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+}
+
+[data-theme="dark"] .full-calendar-day:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .full-calendar-day.active-day {
+    background-color: rgba(236, 72, 153, 0.12);
+    border: 2px solid var(--accent-color);
+}
+
 .day-number {
     font-weight: 700;
     font-size: 14px;
@@ -938,6 +1108,12 @@ a {
     border-radius: var(--border-radius-sm);
     align-self: flex-start;
     margin-top: 6px;
+}
+
+[data-theme="dark"] .day-todo-indicator {
+    background-color: rgba(236, 72, 153, 0.2);
+    color: #f472b6;
+    border: 1px solid rgba(236, 72, 153, 0.3);
 }
 
 .goals-list {
@@ -982,6 +1158,16 @@ a {
     border-color: var(--accent-color);
 }
 
+[data-theme="dark"] .time-slot {
+    background-color: var(--bg-secondary);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .time-slot:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
 .time-label {
     width: 70px;
     font-weight: 700;
@@ -1006,6 +1192,16 @@ a {
     border-left-color: var(--accent-color);
     color: var(--text-primary);
     font-weight: 500;
+}
+
+[data-theme="dark"] .time-slot-content {
+    border-left-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .time-slot-content.has-task {
+    border-left-color: var(--accent-color);
+    color: var(--text-primary);
 }
 
 /* Water tracker widget */
@@ -1056,6 +1252,15 @@ a {
 
 .glass:hover {
     transform: scale(1.05);
+}
+
+[data-theme="dark"] .glass {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .glass.active {
+    border-color: #38bdf8;
+    box-shadow: 0 0 12px rgba(56, 189, 248, 0.35);
 }
 
 /* Mood Tracker Layout */
@@ -1109,6 +1314,29 @@ a {
     color: white;
 }
 
+[data-theme="dark"] .mood-btn {
+    background-color: rgba(255, 255, 255, 0.03);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .mood-btn:hover {
+    border-color: var(--accent-color);
+    background-color: rgba(236, 72, 153, 0.15);
+}
+
+[data-theme="dark"] .mood-btn.selected {
+    background-color: var(--accent-color);
+    box-shadow: 0 4px 16px rgba(236, 72, 153, 0.4);
+}
+
+[data-theme="dark"] .mood-btn span {
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .mood-btn.selected span {
+    color: #ffffff;
+}
+
 .mood-grid-card {
     grid-column: 1 / -1;
 }
@@ -1120,6 +1348,10 @@ a {
     gap: 4px;
     padding: 10px 0;
     overflow-x: auto;
+}
+
+[data-theme="dark"] .mood-grid-cell {
+    background-color: rgba(255, 255, 255, 0.08);
 }
 
 .mood-grid-cell {
@@ -1261,30 +1493,31 @@ a {
 
 .form-control-new {
     width: 100%;
-    padding: 10px 12px;
+    padding: 10px 14px;
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    background: transparent;
+    border-radius: var(--border-radius-sm);
+    background: var(--input-bg);
     font-size: 14px;
+    font-weight: 500;
     color: var(--text-primary);
-    transition: all 0.2s ease;
+    transition: var(--transition-smooth);
     font-family: inherit;
 }
 
 .form-control-new:focus {
     outline: none;
-    border-color: #0d9488;
-    box-shadow: 0 0 0 1px #0d9488;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--input-focus-ring);
 }
 
 .form-control-new::placeholder {
     color: var(--text-secondary);
-    opacity: 0.7;
+    opacity: 0.65;
 }
 
 .section-label {
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     color: var(--text-primary);
     margin-bottom: 2px;
 }
@@ -1300,9 +1533,10 @@ a {
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 12px;
-    font-weight: 500;
+    font-weight: 600;
     color: white;
     cursor: pointer;
+    transition: var(--transition-smooth);
 }
 .label-work { background-color: #3b82f6; }
 .label-personal { background-color: #10b981; }
@@ -1320,6 +1554,12 @@ a {
     justify-content: center;
     color: var(--text-secondary);
     cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.label-add-btn:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
 }
 
 .label-color-btn {
@@ -1332,6 +1572,11 @@ a {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.label-color-btn:hover {
+    border-color: var(--accent-color);
 }
 
 .select-wrapper, .input-icon-wrapper {
@@ -1352,9 +1597,6 @@ a {
     padding-left: 36px;
     appearance: none;
     -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
 }
 
 .input-icon {
@@ -1379,32 +1621,45 @@ a {
 }
 
 .btn-secondary-new {
-    padding: 8px 16px;
-    border-radius: 6px;
-    border: none;
-    background: #e2e8f0;
-    color: #334155;
-    font-weight: 500;
+    padding: 9px 18px;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-weight: 600;
     font-size: 14px;
     cursor: pointer;
     font-family: inherit;
+    transition: var(--transition-smooth);
 }
 
 [data-theme="dark"] .btn-secondary-new {
-    background: #334155;
-    color: #e2e8f0;
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary-new:hover {
+    background-color: var(--border-color);
 }
 
 .btn-primary-new {
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 9px 18px;
+    border-radius: var(--border-radius-sm);
     border: none;
-    background: #0d9488;
+    background: var(--accent-color);
     color: white;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 14px;
     cursor: pointer;
     font-family: inherit;
+    transition: var(--transition-smooth);
+}
+
+.btn-primary-new:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(236, 72, 153, 0.35);
 }
 /* Bimonthly Mood Calendar Styles */
 .bimonthly-calendars-container {

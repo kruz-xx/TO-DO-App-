@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!title) {
                 if (modalInputTitle) {
                     modalInputTitle.focus();
-                    modalInputTitle.style.borderColor = '#0d9488';
+                    modalInputTitle.style.borderColor = 'var(--accent-color)';
                 }
                 return;
             }
