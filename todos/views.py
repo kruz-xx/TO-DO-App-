@@ -1,22 +1,34 @@
+"""
+View Handlers and API Controllers for the TODO IST Application.
+
+Contains two main categories of views:
+1. DRF REST API ViewSets (TodoViewSet, MeetingViewSet) providing complete CRUD
+   endpoints with user-scoped querysets and session authentication.
+2. Server-Rendered Django Template Views (home, monthly, daily, mood, settings,
+   profile, register) for the interactive web frontend.
+"""
+
 from django.shortcuts import render, redirect
 from django.views.decorators.http import require_POST
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.utils import timezone
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 from .models import Todo, MoodLog, Meeting
 from .serializers import TodoSerializer, MeetingSerializer
+from .forms import UserRegisterForm, TodoForm, MeetingForm, MoodLogForm
 
-# --- DRF REST API ViewSet ---
+# --- DRF REST API ViewSets ---
 class TodoViewSet(viewsets.ModelViewSet):
     serializer_class = TodoSerializer
     permission_classes = [IsAuthenticated]
 
+    # Ensure users can only read/modify their own tasks (data isolation)
     def get_queryset(self):
         return Todo.objects.filter(user=self.request.user)
 
+    # Automatically associate new tasks with the authenticated user server-side
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
@@ -70,6 +82,7 @@ def log_mood_view(request):
     
     if mood:
         today = timezone.localdate()
+        # update_or_create updates today's log if it already exists, or inserts a new one
         MoodLog.objects.update_or_create(
             date=today,
             user=request.user,
@@ -91,13 +104,15 @@ def profile_view(request):
 
 def register_view(request):
     if request.method == 'POST':
-        form = UserCreationForm(request.POST)
+        form = UserRegisterForm(request.POST)
         if form.is_valid():
             user = form.save()
+            # Log the new user in automatically upon successful registration
             login(request, user)
             return redirect('home')
     else:
-        form = UserCreationForm()
+        form = UserRegisterForm()
     return render(request, 'todos/register.html', {'form': form})
+
 
 

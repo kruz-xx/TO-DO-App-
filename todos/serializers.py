@@ -1,6 +1,16 @@
+"""
+Django REST Framework Serializers for the TODO IST Application.
+
+Handles serialization (converting model instances to JSON) and
+deserialization (validating and parsing incoming JSON requests) for:
+- TodoSerializer: Serializes Todo model instances.
+- MeetingSerializer: Serializes Meeting model instances.
+"""
+
 from rest_framework import serializers
 from .models import Todo, Meeting
 
+# Serializers convert Django ORM model instances to JSON and validate incoming JSON payloads
 class TodoSerializer(serializers.ModelSerializer):
     class Meta:
         model = Todo

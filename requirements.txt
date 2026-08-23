@@ -1,0 +1,10 @@
+# Core Framework
+Django>=5.0,<7.0
+
+# REST API Framework
+djangorestframework>=3.14.0
+
+# Supporting Libraries
+asgiref>=3.8.0
+sqlparse>=0.5.0
+tzdata>=2024.1

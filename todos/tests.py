@@ -1,3 +1,15 @@
+"""
+Automated Test Suite for the TODO IST REST API.
+
+Contains test cases verifying:
+- Authenticated task creation (POST /api/todos/)
+- Per-user task list retrieval (GET /api/todos/)
+- Task detail retrieval (GET /api/todos/{id}/)
+- Task partial/full update (PUT /api/todos/{id}/)
+- Task deletion (DELETE /api/todos/{id}/)
+"""
+
+from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
@@ -5,7 +17,12 @@ from .models import Todo
 
 class TodoAPITests(APITestCase):
     def setUp(self):
+        # Create a test user fixture and authenticate the test client before each test method runs
+        self.user = User.objects.create_user(username='testuser', password='password123')
+        self.client.force_authenticate(user=self.user)
+        
         self.todo = Todo.objects.create(
+            user=self.user,
             title="Buy groceries",
             description="Milk, eggs, and bread",
             priority="high"
