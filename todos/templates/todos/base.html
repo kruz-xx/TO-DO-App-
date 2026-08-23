@@ -6,6 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}TODO IST{% endblock %}</title>
     
+    <!-- Flatpickr Date/Time Picker CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    
     <!-- Custom Style -->
     <link rel="stylesheet" href="{% static 'todos/css/styles.css' %}">
     
@@ -144,13 +147,19 @@
                     <div class="form-group-new">
                         <label class="section-label" for="modal-input-due-date">Date</label>
                         <div class="input-icon-wrapper">
-                            <input type="date" id="modal-input-due-date" class="form-control-new" placeholder="MM/DD/YYYY">
+                            <input type="text" id="modal-input-due-date" class="form-control-new date-picker" placeholder="Select date...">
+                            <span class="input-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            </span>
                         </div>
                     </div>
                     <div class="form-group-new">
-                        <label class="section-label">Time</label>
+                        <label class="section-label" for="modal-input-due-time">Time</label>
                         <div class="input-icon-wrapper">
-                            <input type="time" id="modal-input-due-time" class="form-control-new" placeholder="HH:MM AM/PM">
+                            <input type="text" id="modal-input-due-time" class="form-control-new time-picker" placeholder="Select time...">
+                            <span class="input-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -164,6 +173,9 @@
         </div>
     </div>
 
+    <!-- Flatpickr Core JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    
     <!-- Client-Side JavaScript -->
     <script src="{% static 'todos/js/main.js' %}"></script>
     {% block extra_js %}{% endblock %}

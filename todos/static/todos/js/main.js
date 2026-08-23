@@ -148,6 +148,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Global Flatpickr Initializer
+    function initFlatpickr() {
+        if (typeof flatpickr !== 'undefined') {
+            flatpickr('.date-picker', {
+                dateFormat: 'Y-m-d',
+                altInput: true,
+                altFormat: 'F j, Y',
+                disableMobile: true,
+                animate: true
+            });
+            flatpickr('.time-picker', {
+                enableTime: true,
+                noCalendar: true,
+                dateFormat: 'H:i',
+                altInput: true,
+                altFormat: 'h:i K',
+                disableMobile: true,
+                animate: true
+            });
+        }
+    }
+
+    initFlatpickr();
+
     function openModal() {
         taskModal.classList.add('open');
     }
@@ -157,8 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalInputTitle) modalInputTitle.value = '';
         if (modalInputDesc) modalInputDesc.value = '';
         if (modalInputPriority) modalInputPriority.value = 'medium';
-        if (modalInputDueDate) modalInputDueDate.value = '';
-        if (modalInputDueTime) modalInputDueTime.value = '';
+        if (modalInputDueDate) {
+            if (modalInputDueDate._flatpickr) modalInputDueDate._flatpickr.clear();
+            else modalInputDueDate.value = '';
+        }
+        if (modalInputDueTime) {
+            if (modalInputDueTime._flatpickr) modalInputDueTime._flatpickr.clear();
+            else modalInputDueTime.value = '';
+        }
         if (modalTaskId) modalTaskId.value = '';
         clearSelectedLabels();
     }
@@ -176,10 +206,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalTaskId) modalTaskId.value = '';
         
         if (modalInputDueDate && e.detail.dueDate) {
-            modalInputDueDate.value = e.detail.dueDate;
+            if (modalInputDueDate._flatpickr) {
+                modalInputDueDate._flatpickr.setDate(e.detail.dueDate, true);
+            } else {
+                modalInputDueDate.value = e.detail.dueDate;
+            }
         }
         if (modalInputDueTime && e.detail.dueTime) {
-            modalInputDueTime.value = e.detail.dueTime;
+            if (modalInputDueTime._flatpickr) {
+                modalInputDueTime._flatpickr.setDate(e.detail.dueTime, true);
+            } else {
+                modalInputDueTime.value = e.detail.dueTime;
+            }
         }
         openModal();
     });
