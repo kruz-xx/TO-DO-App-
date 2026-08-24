@@ -12,9 +12,9 @@
 <div style="max-width: 650px; margin-top: 24px;">
     <!-- Profile Card -->
     <div class="card" style="display: flex; flex-direction: column; align-items: center; text-align: center; padding: 40px 20px;">
-        <div class="premium-avatar" id="avatar-letters">AU</div>
+        <div class="premium-avatar" id="avatar-letters">{{ user.username|slice:":2"|upper }}</div>
         <div style="margin-top: 16px;">
-            <h2 id="profile-name" style="font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px;">Aesthetic User</h2>
+            <h2 id="profile-name" style="font-size: 28px; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 4px;">{{ user.username }}</h2>
             
             <div style="display: flex; gap: 12px; justify-content: center; align-items: center; margin-bottom: 12px;">
                 <span id="profile-role" style="font-size: 13px; font-weight: 600; color: var(--accent-color); background-color: var(--pastel-pink); padding: 4px 10px; border-radius: 12px; display: none;"></span>
@@ -26,7 +26,7 @@
             
             <p id="profile-bio" style="font-size: 14px; color: var(--text-secondary); font-weight: 500; max-width: 450px; margin: 0 auto 12px auto; display: none; line-height: 1.5;"></p>
             
-            <p style="font-size: 13px; color: var(--text-secondary); font-weight: 500; opacity: 0.7;">TODO IST member since today</p>
+            <p style="font-size: 13px; color: var(--text-secondary); font-weight: 500; opacity: 0.7;">TODO IST member since {{ user.date_joined|date:"M Y" }}</p>
         </div>
 
         <div class="profile-stats-grid" style="margin-top: 32px; gap: 20px;">
@@ -88,13 +88,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const achIcon = document.getElementById('achievement-complete-icon');
     const achTitle = document.getElementById('achievement-complete-title');
 
-    // Load username and profile data from LocalStorage
-    const username = localStorage.getItem('username') || 'Aesthetic User';
+    // User-scoped profile data
+    const userId = "{{ user.id }}";
+    const authUsername = "{{ user.username|escapejs }}";
+    const username = localStorage.getItem(`profile_name_${userId}`) || authUsername;
     profileName.textContent = username;
 
-    const role = localStorage.getItem('profile_role');
-    const location = localStorage.getItem('profile_location');
-    const bio = localStorage.getItem('profile_bio');
+    const role = localStorage.getItem(`profile_role_${userId}`);
+    const location = localStorage.getItem(`profile_location_${userId}`);
+    const bio = localStorage.getItem(`profile_bio_${userId}`);
 
     if (role) {
         document.getElementById('profile-role').textContent = role;
@@ -113,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Set Avatar Initials
     const initials = username.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
-    avatarLetters.textContent = initials || 'AU';
+    avatarLetters.textContent = initials || authUsername.substring(0, 2).toUpperCase();
 
     // Fetch stats from DRF todo API
     async function loadStats() {

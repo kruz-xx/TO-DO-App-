@@ -100,13 +100,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeOptions = document.querySelectorAll('.segmented-option');
     const soundCheckbox = document.getElementById('sound-checkbox');
 
+    // User-scoped identifier
+    const userId = "{{ user.id }}";
+    const authUsername = "{{ user.username|escapejs }}";
+
     // Load current values
-    const currentUsername = localStorage.getItem('username') || 'Aesthetic User';
+    const currentUsername = localStorage.getItem(`profile_name_${userId}`) || authUsername;
     nameInput.value = currentUsername;
 
-    roleInput.value = localStorage.getItem('profile_role') || '';
-    locationInput.value = localStorage.getItem('profile_location') || '';
-    bioInput.value = localStorage.getItem('profile_bio') || '';
+    roleInput.value = localStorage.getItem(`profile_role_${userId}`) || '';
+    locationInput.value = localStorage.getItem(`profile_location_${userId}`) || '';
+    bioInput.value = localStorage.getItem(`profile_bio_${userId}`) || '';
 
     const currentTheme = localStorage.getItem('theme') || 'light';
     themeInput.value = currentTheme;
@@ -150,12 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save events
     saveBtn.addEventListener('click', () => {
-        const newName = nameInput.value.trim() || 'Aesthetic User';
-        localStorage.setItem('username', newName);
+        const newName = nameInput.value.trim() || authUsername;
+        localStorage.setItem(`profile_name_${userId}`, newName);
         
-        localStorage.setItem('profile_role', roleInput.value.trim());
-        localStorage.setItem('profile_location', locationInput.value.trim());
-        localStorage.setItem('profile_bio', bioInput.value.trim());
+        localStorage.setItem(`profile_role_${userId}`, roleInput.value.trim());
+        localStorage.setItem(`profile_location_${userId}`, locationInput.value.trim());
+        localStorage.setItem(`profile_bio_${userId}`, bioInput.value.trim());
         
         // Disable inputs again
         nameInput.disabled = true;
@@ -174,7 +178,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Sound Selection
         localStorage.setItem('sound_enabled', soundCheckbox.checked);
 
-        alert('Settings saved successfully! ✨');
+        // Internal in-app toast notification
+        if (typeof showToast === 'function') {
+            showToast('Settings saved successfully! ✨', 'success');
+        }
     });
 });
 </script>

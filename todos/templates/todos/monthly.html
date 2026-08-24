@@ -145,7 +145,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const addGoalBtn = document.getElementById('add-goal-btn');
     const goalsList = document.getElementById('goals-list');
 
-    let goals = JSON.parse(localStorage.getItem('monthly_goals') || '[]');
+    const userId = "{{ user.id }}";
+    let goals = JSON.parse(localStorage.getItem(`monthly_goals_${userId}`) || '[]');
 
     function renderGoals() {
         if (!goalsList) return;
@@ -181,13 +182,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.toggleGoal = (index) => {
         goals[index].completed = !goals[index].completed;
-        localStorage.setItem('monthly_goals', JSON.stringify(goals));
+        localStorage.setItem(`monthly_goals_${userId}`, JSON.stringify(goals));
         renderGoals();
     };
 
     window.deleteGoal = (index) => {
         goals.splice(index, 1);
-        localStorage.setItem('monthly_goals', JSON.stringify(goals));
+        localStorage.setItem(`monthly_goals_${userId}`, JSON.stringify(goals));
         renderGoals();
     };
 
@@ -196,7 +197,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const text = goalInput.value.trim();
             if (text) {
                 goals.push({ text, completed: false });
-                localStorage.setItem('monthly_goals', JSON.stringify(goals));
+                localStorage.setItem(`monthly_goals_${userId}`, JSON.stringify(goals));
                 goalInput.value = '';
                 renderGoals();
             }
@@ -408,7 +409,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const attendees = document.getElementById('meeting-attendees').value.trim();
         const notes = document.getElementById('meeting-notes').value.trim();
 
-        if (!title || !date) return alert('Title and date are required.');
+        if (!title || !date) return showToast('Title and date are required.', 'error');
 
         try {
             const res = await fetch('/api/meetings/', {
@@ -422,12 +423,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (res.ok) {
                 meetingModal.classList.remove('open');
+                showToast('Meeting scheduled successfully! 📅', 'success');
                 loadTodosAndRender();
             } else {
-                alert('Failed to save meeting.');
+                showToast('Failed to save meeting.', 'error');
             }
         } catch(e) {
             console.error(e);
+            showToast('Error saving meeting.', 'error');
         }
     });
 

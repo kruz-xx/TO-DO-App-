@@ -140,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const waterText = document.getElementById('water-text');
     const resetWaterBtn = document.getElementById('reset-water-btn');
     
-    let waterLog = JSON.parse(localStorage.getItem('water_log') || '[]');
+    const userId = "{{ user.id }}";
+    let waterLog = JSON.parse(localStorage.getItem(`water_log_${userId}`) || '[]');
 
     function renderWaterTracker() {
         let count = 0;
@@ -166,7 +167,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 waterLog.push(index);
             }
-            localStorage.setItem('water_log', JSON.stringify(waterLog));
+            localStorage.setItem(`water_log_${userId}`, JSON.stringify(waterLog));
             renderWaterTracker();
         });
     });
@@ -174,7 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (resetWaterBtn) {
         resetWaterBtn.addEventListener('click', () => {
             waterLog = [];
-            localStorage.setItem('water_log', JSON.stringify(waterLog));
+            localStorage.setItem(`water_log_${userId}`, JSON.stringify(waterLog));
             renderWaterTracker();
         });
     }
@@ -194,7 +195,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const affirmationElement = document.getElementById('daily-affirmation');
     const nextAffBtn = document.getElementById('next-affirmation-btn');
 
-    let currentAffIndex = parseInt(localStorage.getItem('aff_index') || '0');
+    let currentAffIndex = parseInt(localStorage.getItem(`aff_index_${userId}`) || '0');
     if (affirmationElement) {
         affirmationElement.textContent = `"${affirmations[currentAffIndex % affirmations.length]}"`;
     }
@@ -202,7 +203,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (nextAffBtn && affirmationElement) {
         nextAffBtn.addEventListener('click', () => {
             currentAffIndex = (currentAffIndex + 1) % affirmations.length;
-            localStorage.setItem('aff_index', currentAffIndex);
+            localStorage.setItem(`aff_index_${userId}`, currentAffIndex);
             affirmationElement.textContent = `"${affirmations[currentAffIndex]}"`;
         });
     }

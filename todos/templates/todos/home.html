@@ -6,7 +6,7 @@
 {% block content %}
 <div class="dashboard-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
     <div>
-        <h1 style="font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">Welcome Back!</h1>
+        <h1 style="font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">Welcome Back, {{ user.username }}!</h1>
         <p style="color: var(--text-secondary); font-weight: 500; margin-top: 4px;">Here's your productivity overview for today.</p>
     </div>
     <button class="btn btn-primary" id="toggle-add-form-btn">+ Create New Task</button>
